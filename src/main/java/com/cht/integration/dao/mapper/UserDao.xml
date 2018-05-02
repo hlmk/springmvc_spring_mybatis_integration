@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cht.integration.dao.UserDao" >
+
+
+    <resultMap id="resultMap" type="com.cht.integration.vo.User">
+        <result property="id" column="id"></result>
+        <result property="userName" column="user_name"></result>
+        <result property="password" column="password"></result>
+        <result property="age" column="age"></result>
+        <result property="date" column="date"></result>
+        <result property="height" column="height"></result>
+    </resultMap>
+
+    <insert id="add" parameterType="com.cht.integration.vo.User">
+        insert into user(
+        <trim suffixOverrides=",">
+            <if test="userName != null and userName != ''">
+                user_name,
+            </if>
+            <if test="password != null and password != ''">
+                password,
+            </if>
+            <if test="age != null">
+                age,
+            </if>
+            <if test="height != null">
+                height,
+            </if>
+            <if test="date != null">
+                date,
+            </if>
+        </trim>
+        ) values (
+        <trim suffixOverrides=",">
+            <if test="userName != null and userName != ''">
+                #{userName},
+            </if>
+            <if test="password != null and password != ''">
+                #{password},
+            </if>
+            <if test="age != null">
+                #{age},
+            </if>
+            <if test="height != null">
+                #{height},
+            </if>
+            <if test="date != null">
+                #{date},
+            </if>
+        </trim>
+        )
+    </insert>
+
+    <delete id="delete" parameterType="integer">
+        delete from user
+        where id=#{id}
+    </delete>
+
+    <update id="update" parameterType="com.cht.integration.vo.User">
+        update user
+        <set >
+            <if test="userName != null and userName != ''">
+                user_name = #{userName},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            <if test="age != null">
+                age = #{age},
+            </if>
+            <if test="height != null">
+                height = #{height},
+            </if>
+            <if test="date != null">
+                date = #{date},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="get" parameterType="com.cht.integration.vo.User" resultMap="resultMap">
+        select * from user
+        where 1=1
+        <if test="userName != null and userName != ''">
+            and user_name = #{userName}
+        </if>
+        <if test="password != null and password != ''">
+            and password = #{password}
+        </if>
+        <if test="age != null">
+            and age = #{age}
+        </if>
+        <if test="height != null">
+            and height = #{height}
+        </if>
+        <if test="date != null">
+            and date = #{date}
+        </if>
+    </select>
+
+</mapper>

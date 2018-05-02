@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context-4.0.xsd
+                        http://www.springframework.org/schema/mvc
+                        http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+                       	 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <ref bean="stringHttpMessageConverter"/>
+            <!--<ref bean="jackson2XmlHttpMessageConverter"/>-->
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!--指定扫描controller包位置-->
+    <context:component-scan base-package="com.cht.integration"/>
+
+    <aop:config proxy-target-class="true"></aop:config>
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+
+
+    <!--
+        proxy-target-class属性值决定是基于接口的还是基于类的代理被创建。首先说明下proxy-target-class="true"和proxy-target-class="false"的区别，为true则是基于类的代理将起作用（需要cglib库），为false或者省略这个属性，则标准的JDK 基于接口的代理将起作用。
+            proxy-target-class在spring事务、aop、缓存这几块都有设置，其作用都是一样的。
+    -->
+    <aop:config proxy-target-class="true"></aop:config>
+   <!-- <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>-->
+
+    <bean id="stringHttpMessageConverter"
+          class="org.springframework.http.converter.StringHttpMessageConverter">
+        <constructor-arg value="UTF-8" index="0"></constructor-arg><!--
+            避免出现乱码 -->
+        <property name="supportedMediaTypes">
+            <list>
+                <value>text/plain;charset=UTF-8</value>
+            </list>
+        </property>
+    </bean>
+
+
+
+    <!--配置视图解析器，使页面能返回页面逻辑名路径-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+
+    <!--json数据交互-->
+   <!-- <bean id="jackson2XmlHttpMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="objectMapper" ref="objectMapper"/>
+    </bean>
+
+    <bean id="objectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean"
+          p:indentOutput="true"
+          p:simpleDateFormat="yyyy-MM-dd"
+          p:modulesToInstall="com.fasterxml.jackson.databind.module.SimpleModule"/>
+
+    <bean id="xmlMapper" parent="objectMapper" p:createXmlMapper="true"/>-->
+
+    <!--指定适配器-->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                    <property name="supportedMediaTypes">
+                        <list>
+                            <value>text/html;charset=UTF-8</value>
+                        </list>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 静态文件映射 -->
+    <mvc:resources mapping="/**" location="/resourse" />
+
+
+    <!-- 配置文件上传，如果没有使用文件上传可以不用配置，当然如果不配，那么配置文件中也不必引入上传组件包 -->
+    <!--<bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        &lt;!&ndash; 默认编码 &ndash;&gt;
+        <property name="defaultEncoding" value="utf-8" />
+        &lt;!&ndash; 文件大小最大值 &ndash;&gt;
+        <property name="maxUploadSize" value="10485760000" />
+        &lt;!&ndash; 内存中的最大值 &ndash;&gt;
+        <property name="maxInMemorySize" value="40960" />
+    </bean>-->
+
+
+
+    <!--配置可直接跳转jsp-->
+    <bean name="/login" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
+        <property name="viewName" value="login"/>
+    </bean>
+
+
+    <!-- freemark模板 -->
+    <!--<bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">-->
+        <!--<property name="templateLoaderPath" value="/ftl/" />-->
+        <!--<property name="defaultEncoding" value="UTF-8" />-->
+    <!--</bean>-->
+</beans>

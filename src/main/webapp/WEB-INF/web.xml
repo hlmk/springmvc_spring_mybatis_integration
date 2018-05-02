@@ -1,0 +1,63 @@
+<!DOCTYPE web-app PUBLIC
+        "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+        "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+    <display-name>Archetype Created Web Application</display-name>
+    <welcome-file-list>
+        <welcome-file>/index/</welcome-file>
+    </welcome-file-list>
+
+
+    <!--springMVC post 提交方式的中文乱码解决方案（springmvc内置提供的方案）-->
+    <filter>
+        <filter-name>encodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>encodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!--
+    ContextLoaderListener 一个servlet监听器，继承了ContextLoader。在tomcat等服务器启动时，会调用contextInitialized方法
+      实例化一个WebApplicationContext
+    -->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:application.xml classpath:db/spring-mybatis.xml</param-value>
+    </context-param>
+
+    <!--springmvc核心servlet配置-->
+    <servlet>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:mvc/springMVC.xml</param-value>
+        </init-param>
+        <!--
+            1)load-on-startup元素标记容器是否在启动的时候就加载这个servlet(实例化并调用其init()方法)。
+            2)它的值必须是一个整数，表示servlet应该被载入的顺序
+            2)当值为0或者大于0时，表示容器在应用启动时就加载并初始化这个servlet；
+            3)当值小于0或者没有指定时，则表示容器在该servlet被选择时才会去加载。
+            4)正数的值越小，该servlet的优先级越高，应用启动时就越先加载。
+            5)当值相同时，容器就会自己选择顺序来加载。
+          -->
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <url-pattern>/</url-pattern><!--拦截除了jsp类型文件以外的所有请求-->
+    </servlet-mapping>
+
+
+
+</web-app>

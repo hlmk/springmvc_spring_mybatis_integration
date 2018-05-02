@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+    <!--引入配置文件-->
+    <context:property-placeholder location="classpath:db/jdbc.properties"/>
+
+    <!--spring mybatis整合-->
+
+    <!--1.配置数据连接池-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <!--基本属性-->
+        <description>写数据库</description>
+        <property name="driverClassName" value="${db.driver}"/>
+        <property name="url" value="${db.url}"/>
+        <property name="username" value="${db.username}"/>
+        <property name="password" value="${db.password}"/>
+
+        <!--配置初始化大小-->
+        <property name="initialSize" value="${db.initialSize}"/>
+        <property name="minIdle" value="${db.maxIdle}"/>
+        <property name="maxActive" value="${db.maxActive}"/>
+
+        <!--配置获取连接等待超时时间-->
+        <property name="maxWait" value="${db.maxWait}"/>
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="${db.timeBetweenEvictionRunsMillis}" />
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="${db.minEvictableIdleTimeMillis}" />
+
+        <!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+        <property name="poolPreparedStatements" value="false" />
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
+
+        <!-- 打开Druid的监控统计功能 -->
+        <property name="filters" value="slf4j" />
+        <property name="proxyFilters">
+            <list>
+                <ref bean="stat-filter" />
+            </list>
+        </property>
+        <property name="timeBetweenLogStatsMillis" value="300000" />
+    </bean>
+
+    <!-- druid 数据库连接池 -->
+    <bean id="stat-filter" class="com.alibaba.druid.filter.stat.StatFilter">
+        <property name="slowSqlMillis" value="5000" />
+        <property name="logSlowSql" value="true" />
+    </bean>
+
+    <!--2.配置事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- 事物管理 -->
+    <!--<tx:annotation-driven transaction-manager="transactionManager" />-->
+
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="add*" propagation="REQUIRED" />
+            <tx:method name="insert*" propagation="REQUIRED" />
+            <tx:method name="save*" propagation="REQUIRED" />
+            <tx:method name="update*" propagation="REQUIRED" />
+            <tx:method name="del*" propagation="REQUIRED" />
+        </tx:attributes>
+    </tx:advice>
+
+    <!--配置事务切面-->
+    <aop:config>
+        <aop:pointcut expression="execution(* com.cht.integration.service.impl.*.*(..))"
+                      id="interceptorpointcut" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="interceptorpointcut" />
+        <!--<aop:aspect ref="DataSourceAspect" >-->
+            <!--<aop:before method="before" pointcut-ref="interceptorpointcut"/>-->
+            <!--<aop:after method="after" pointcut-ref="interceptorpointcut"/>-->
+        <!--</aop:aspect>-->
+    </aop:config>
+
+    <!--配置sqlsessionfactory spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <!-- 自动扫描mapping.xml文件   -->
+        <property name="mapperLocations">
+            <array>
+                <value>classpath:com/cht/integration/dao/mapper/*.xml</value>
+            </array>
+        </property>
+        <property name="configLocation" value="classpath:db/mybatis-config.xml"/>
+        <!--<property name="typeAliasesPackage" value="com.qmyiz.*" />-->
+        <property name="typeAliasesPackage" value="com.cht.integration.vo" />
+    </bean>
+
+    <!-- DAO接口所在包名，Spring会自动查找其下的类  -->
+    <bean id="mapperScanner" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.cht.integration.dao" />
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+</beans>
